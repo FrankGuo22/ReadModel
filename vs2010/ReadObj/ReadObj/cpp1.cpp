@@ -7,23 +7,25 @@
 #include "glut.h"
 #include "object.h" 
 #pragma comment(linker,"/subsystem:windows /entry:mainCRTStartup")
-
+static const GLuint t[] = { 0, 1, 2, 3, 4, 5, 6 };
 map<string,Object> objmap;
 set<string> objname;
 string cd;
+
 map<string,Material> matname;
 GLfloat dx = 0,dy = 0,dz = 0;
 GLfloat ax = 0,ay = 0,az = 0;
 GLint mx = 0,my = 0;
 GLint MouseDown = 0;
 GLfloat aspect = 1;
-
+int sss1, sss2, sss3;
+double area1, area2, area3;
 int facenum = 0;
 double height = 120 / 2;
 double frontbot = 195 / 2;
 double width = 200 / 2;
 double tempx, tempy, tempz;
-double tempxmax = 0.0, tempymax = 0.0, tempzmax = 0.0;
+double tempxmax = 0.0, tempymax = 0.0, tempzmax = 0.0, tempxmin = 1000000, tempymin = 1000000, tempzmin = 1000000;
 void myIdle()
 {
 	Sleep(10);
@@ -143,8 +145,7 @@ void myDisplay()
 	//	glBindTexture(GL_TEXTURE_2D, 3);
 		//glbindtexture面
 		//除三边，确定面，标记面，
-		static const 
-			int t[] = { 0, 3, 3, 2, 2, 1, 1 };
+		
 		vector<int>::iterator iter = temp.faces.begin();
 		if(temp.col==1)
 		{
@@ -168,55 +169,591 @@ void myDisplay()
 			
 			while (iter != temp.faces.end())
 			{
-				if (abs(temp.vertexs[*iter - 1].x) > tempxmax) tempxmax = abs(temp.vertexs[*iter - 1].x);
-				if (abs(temp.vertexs[*iter - 1].y) > tempymax) tempymax = abs(temp.vertexs[*iter - 1].y);
-				if (abs(temp.vertexs[*iter - 1].z) > tempzmax) tempzmax = abs(temp.vertexs[*iter - 1].z);
+				if (temp.vertexs[*iter - 1].x > tempxmax) tempxmax = temp.vertexs[*iter - 1].x;
+				if (temp.vertexs[*iter - 1].y > tempymax) tempymax = temp.vertexs[*iter - 1].y;
+				if (temp.vertexs[*iter - 1].z > tempzmax) tempzmax = temp.vertexs[*iter - 1].z;
+				if (temp.vertexs[*iter - 1].x < tempxmin) tempxmin = temp.vertexs[*iter - 1].x;
+				if (temp.vertexs[*iter - 1].y < tempymin) tempymin = temp.vertexs[*iter - 1].y;
+				if (temp.vertexs[*iter - 1].z < tempzmin) tempzmin = temp.vertexs[*iter - 1].z;
 				iter += 3;
 			}
-			iter = temp.faces.begin();
+
+			setMaterial(matname[temp.material]);
+			glBindTexture(GL_TEXTURE_2D, 1);
+			glBegin(GL_TRIANGLES);
 			
+	
+			iter = temp.faces.begin();
 			while(iter!=temp.faces.end())
 			{
-
-				tempx = abs(height / temp.normals[*(iter + 2) - 1].z)*temp.normals[*(iter + 2) - 1].x;
-				tempy = abs(height / temp.normals[*(iter + 2) - 1].z)*temp.normals[*(iter + 2) - 1].y;
-				tempz = abs(height / temp.normals[*(iter + 2) - 1].z)*temp.normals[*(iter + 2) - 1].z;
-				if ((abs(tempx) <= width) && (abs(tempy) <= frontbot) && (tempz>0)) 
-					facenum = 1;
-				if ((abs(tempx) <= width) && (abs(tempy) <= frontbot) && (tempz<0)) 
-					facenum = 2;
-
-				tempx = abs(frontbot / temp.normals[*(iter + 2) - 1].y)*temp.normals[*(iter + 2) - 1].x;
-				tempy = abs(frontbot / temp.normals[*(iter + 2) - 1].y)*temp.normals[*(iter + 2) - 1].y;
-				tempz = abs(frontbot / temp.normals[*(iter + 2) - 1].y)*temp.normals[*(iter + 2) - 1].z;
-				if ((abs(tempx) <= width) && (abs(tempz) <= height) && (tempy>0)) 
-					facenum = 4;
-				if ((abs(tempx) <= width) && (abs(tempz) <= height) && (tempy<0)) 
-					facenum = 3;
-
-				tempx = abs(width / temp.normals[*(iter + 2) - 1].x)*temp.normals[*(iter + 2) - 1].x;
-				tempy = abs(width / temp.normals[*(iter + 2) - 1].x)*temp.normals[*(iter + 2) - 1].y;
-				tempz = abs(width / temp.normals[*(iter + 2) - 1].x)*temp.normals[*(iter + 2) - 1].z;
-				if ((abs(tempz) <= height) && (abs(tempy) <= frontbot) && (tempx>0)) 
-					facenum = 5;
-				if ((abs(tempz) <= height) && (abs(tempy) <= frontbot) && (tempx<0)) 
-					facenum = 6;
+				//temp.vertexs[*(iter)-1].x temp.vertexs[*(iter)-1].y temp.vertexs[*(iter)-1].z
+				//temp.vertexs[*(iter+3)-1].x temp.vertexs[*(iter+3)-1].y temp.vertexs[*(iter+3)-1].z
+				//temp.vertexs[*(iter+6)-1].x temp.vertexs[*(iter+6)-1].y temp.vertexs[*(iter+6)-1].z
+				area1 = abs(temp.vertexs[*(iter)-1].x*temp.vertexs[*(iter + 3)-1].y - temp.vertexs[*(iter)-1].y*temp.vertexs[*(iter + 3)-1].x + temp.vertexs[*(iter + 6)-1].x*temp.vertexs[*(iter)-1].y - temp.vertexs[*(iter + 6)-1].y*temp.vertexs[*(iter)-1].x + temp.vertexs[*(iter + 3)-1].x*temp.vertexs[*(iter + 6)-1].y - temp.vertexs[*(iter + 6)-1].x*temp.vertexs[*(iter + 3)-1].y)*0.5;
+				area2 = abs(temp.vertexs[*(iter)-1].x*temp.vertexs[*(iter + 3)-1].z - temp.vertexs[*(iter)-1].z*temp.vertexs[*(iter + 3)-1].x + temp.vertexs[*(iter + 6)-1].x*temp.vertexs[*(iter)-1].z - temp.vertexs[*(iter + 6)-1].z*temp.vertexs[*(iter)-1].x + temp.vertexs[*(iter + 3)-1].x*temp.vertexs[*(iter + 6)-1].z - temp.vertexs[*(iter + 6)-1].x*temp.vertexs[*(iter + 3)-1].z)*0.5;
+				area3 = abs(temp.vertexs[*(iter)-1].y*temp.vertexs[*(iter + 3)-1].z - temp.vertexs[*(iter)-1].z*temp.vertexs[*(iter + 3)-1].y + temp.vertexs[*(iter + 6)-1].y*temp.vertexs[*(iter)-1].z - temp.vertexs[*(iter + 6)-1].z*temp.vertexs[*(iter)-1].y + temp.vertexs[*(iter + 3)-1].y*temp.vertexs[*(iter + 6)-1].z - temp.vertexs[*(iter + 6)-1].y*temp.vertexs[*(iter + 3)-1].z)*0.5;
+				if ((area3 >= area2) && (area3 >= area1))
+				{
+					if (temp.normals[*(iter + 2) - 1].x + temp.normals[*(iter + 5) - 1].x + temp.normals[*(iter + 8) - 1].x > 0)
+						facenum = 5;
+					else
+						facenum = 6;
+					sss1 += 1;
+				}
+				if ((area1 >= area2) && (area1 >= area3))
+				{
+					if (temp.normals[*(iter + 2) - 1].z + temp.normals[*(iter + 5) - 1].z + temp.normals[*(iter + 8) - 1].z > 0)
+						facenum = 4;
+					else
+						facenum = 1;
+					sss2 += 1;
+				}
+				if ((area2 >= area1) && (area2 >= area3))
+				{
+					if (temp.normals[*(iter + 2) - 1].y + temp.normals[*(iter + 5) - 1].y + temp.normals[*(iter + 8) - 1].y > 0)
+						facenum = 3;
+					else
+						facenum = 2;
+					sss3 += 1;
+				}
+				if (facenum != 1)
+				{
+					iter += 9;
+					continue;
+				}
+				//glTexCoord2f( (temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin),(temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				//glTexCoord2f((temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin), (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				//glTexCoord2f(1-(temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin), (temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin));
 				
-
-				setMaterial(matname[temp.material]);
-				glBindTexture(GL_TEXTURE_2D, t[facenum]);
-				glBegin(GL_QUADS);
+				glNormal3f(temp.normals[*(iter + 2) - 1].x, temp.normals[*(iter + 2) - 1].y, temp.normals[*(iter + 2) - 1].z);
+				if ((facenum == 1))
+					glTexCoord2f( (temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin),(temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				if ((facenum == 4))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), 1-(temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				if ((facenum == 2))
+					glTexCoord2f((temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin),(temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin) );
+				if ((facenum == 3))
+					glTexCoord2f(1-(temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 6))
+					glTexCoord2f(1-(temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 5))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				glVertex3f(temp.vertexs[*iter - 1].x, temp.vertexs[*iter - 1].y, temp.vertexs[*iter - 1].z);
+				iter += 3;
 
 				glNormal3f(temp.normals[*(iter + 2) - 1].x, temp.normals[*(iter + 2) - 1].y, temp.normals[*(iter + 2) - 1].z);
-				if ((facenum == 1) || (facenum==2))
-					glTexCoord2f((temp.vertexs[*iter - 1].y + tempymax) / (2 * tempymax), (temp.vertexs[*iter - 1].z + tempzmax) / (2 * tempzmax));
-				if ((facenum == 3) || (facenum == 4))
-					glTexCoord2f((temp.vertexs[*iter - 1].x + tempxmax) / (2 * tempxmax), (temp.vertexs[*iter - 1].z + tempzmax) / (2 * tempzmax));
-				if ((facenum == 5) || (facenum == 6))
-					glTexCoord2f((temp.vertexs[*iter - 1].y + tempymax) / (2 * tempymax), (temp.vertexs[*iter - 1].x + tempxmax) / (2 * tempxmax));
+				if ((facenum == 1))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				if ((facenum == 4))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), 1 - (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				if ((facenum == 2))
+					glTexCoord2f((temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 3))
+					glTexCoord2f(1 - (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 6))
+					glTexCoord2f(1 - (temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 5))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				glVertex3f(temp.vertexs[*iter - 1].x, temp.vertexs[*iter - 1].y, temp.vertexs[*iter - 1].z);
+				iter += 3;
+
+				glNormal3f(temp.normals[*(iter + 2) - 1].x, temp.normals[*(iter + 2) - 1].y, temp.normals[*(iter + 2) - 1].z);
+				if ((facenum == 1))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				if ((facenum == 4))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), 1 - (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				if ((facenum == 2))
+					glTexCoord2f((temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 3))
+					glTexCoord2f(1 - (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 6))
+					glTexCoord2f(1 - (temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 5))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
 				glVertex3f(temp.vertexs[*iter - 1].x, temp.vertexs[*iter - 1].y, temp.vertexs[*iter - 1].z);
 				iter += 3;
 			}
+
+			glBindTexture(GL_TEXTURE_2D, 0);
+			glEnd();
+			
+			glBindTexture(GL_TEXTURE_2D, 2);
+			glBegin(GL_TRIANGLES);
+			iter = temp.faces.begin();
+			while (iter != temp.faces.end())
+			{
+				//temp.vertexs[*(iter)-1].x temp.vertexs[*(iter)-1].y temp.vertexs[*(iter)-1].z
+				//temp.vertexs[*(iter+3)-1].x temp.vertexs[*(iter+3)-1].y temp.vertexs[*(iter+3)-1].z
+				//temp.vertexs[*(iter+6)-1].x temp.vertexs[*(iter+6)-1].y temp.vertexs[*(iter+6)-1].z
+				area1 = abs(temp.vertexs[*(iter)-1].x*temp.vertexs[*(iter + 3) - 1].y - temp.vertexs[*(iter)-1].y*temp.vertexs[*(iter + 3) - 1].x + temp.vertexs[*(iter + 6) - 1].x*temp.vertexs[*(iter)-1].y - temp.vertexs[*(iter + 6) - 1].y*temp.vertexs[*(iter)-1].x + temp.vertexs[*(iter + 3) - 1].x*temp.vertexs[*(iter + 6) - 1].y - temp.vertexs[*(iter + 6) - 1].x*temp.vertexs[*(iter + 3) - 1].y)*0.5;
+				area2 = abs(temp.vertexs[*(iter)-1].x*temp.vertexs[*(iter + 3) - 1].z - temp.vertexs[*(iter)-1].z*temp.vertexs[*(iter + 3) - 1].x + temp.vertexs[*(iter + 6) - 1].x*temp.vertexs[*(iter)-1].z - temp.vertexs[*(iter + 6) - 1].z*temp.vertexs[*(iter)-1].x + temp.vertexs[*(iter + 3) - 1].x*temp.vertexs[*(iter + 6) - 1].z - temp.vertexs[*(iter + 6) - 1].x*temp.vertexs[*(iter + 3) - 1].z)*0.5;
+				area3 = abs(temp.vertexs[*(iter)-1].y*temp.vertexs[*(iter + 3) - 1].z - temp.vertexs[*(iter)-1].z*temp.vertexs[*(iter + 3) - 1].y + temp.vertexs[*(iter + 6) - 1].y*temp.vertexs[*(iter)-1].z - temp.vertexs[*(iter + 6) - 1].z*temp.vertexs[*(iter)-1].y + temp.vertexs[*(iter + 3) - 1].y*temp.vertexs[*(iter + 6) - 1].z - temp.vertexs[*(iter + 6) - 1].y*temp.vertexs[*(iter + 3) - 1].z)*0.5;
+				if ((area3 >= area2) && (area3 >= area1))
+				{
+					if (temp.normals[*(iter + 2) - 1].x + temp.normals[*(iter + 5) - 1].x + temp.normals[*(iter + 8) - 1].x > 0)
+						facenum = 5;
+					else
+						facenum = 6;
+					sss1 += 1;
+				}
+				if ((area1 >= area2) && (area1 >= area3))
+				{
+					if (temp.normals[*(iter + 2) - 1].z + temp.normals[*(iter + 5) - 1].z + temp.normals[*(iter + 8) - 1].z > 0)
+						facenum = 4;
+					else
+						facenum = 1;
+					sss2 += 1;
+				}
+				if ((area2 >= area1) && (area2 >= area3))
+				{
+					if (temp.normals[*(iter + 2) - 1].y + temp.normals[*(iter + 5) - 1].y + temp.normals[*(iter + 8) - 1].y > 0)
+						facenum = 3;
+					else
+						facenum = 2;
+					sss3 += 1;
+				}
+				if (facenum != 2)
+				{
+					iter += 9;
+					continue;
+				}
+				//glTexCoord2f( (temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin),(temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				//glTexCoord2f((temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin), (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				//glTexCoord2f(1-(temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin), (temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin));
+
+				glNormal3f(temp.normals[*(iter + 2) - 1].x, temp.normals[*(iter + 2) - 1].y, temp.normals[*(iter + 2) - 1].z);
+				if ((facenum == 1))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				if ((facenum == 4))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), 1 - (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				if ((facenum == 2))
+					glTexCoord2f((temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 3))
+					glTexCoord2f(1 - (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 6))
+					glTexCoord2f(1 - (temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 5))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				glVertex3f(temp.vertexs[*iter - 1].x, temp.vertexs[*iter - 1].y, temp.vertexs[*iter - 1].z);
+				iter += 3;
+
+				glNormal3f(temp.normals[*(iter + 2) - 1].x, temp.normals[*(iter + 2) - 1].y, temp.normals[*(iter + 2) - 1].z);
+				if ((facenum == 1))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				if ((facenum == 4))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), 1 - (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				if ((facenum == 2))
+					glTexCoord2f((temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 3))
+					glTexCoord2f(1 - (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 6))
+					glTexCoord2f(1 - (temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 5))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				glVertex3f(temp.vertexs[*iter - 1].x, temp.vertexs[*iter - 1].y, temp.vertexs[*iter - 1].z);
+				iter += 3;
+
+				glNormal3f(temp.normals[*(iter + 2) - 1].x, temp.normals[*(iter + 2) - 1].y, temp.normals[*(iter + 2) - 1].z);
+				if ((facenum == 1))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				if ((facenum == 4))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), 1 - (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				if ((facenum == 2))
+					glTexCoord2f((temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 3))
+					glTexCoord2f(1 - (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 6))
+					glTexCoord2f(1 - (temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 5))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				glVertex3f(temp.vertexs[*iter - 1].x, temp.vertexs[*iter - 1].y, temp.vertexs[*iter - 1].z);
+				iter += 3;
+			}
+			glBindTexture(GL_TEXTURE_2D, 0);
+			glEnd();
+
+
+			glBindTexture(GL_TEXTURE_2D, 3);
+			glBegin(GL_TRIANGLES);
+			iter = temp.faces.begin();
+			while (iter != temp.faces.end())
+			{
+				//temp.vertexs[*(iter)-1].x temp.vertexs[*(iter)-1].y temp.vertexs[*(iter)-1].z
+				//temp.vertexs[*(iter+3)-1].x temp.vertexs[*(iter+3)-1].y temp.vertexs[*(iter+3)-1].z
+				//temp.vertexs[*(iter+6)-1].x temp.vertexs[*(iter+6)-1].y temp.vertexs[*(iter+6)-1].z
+				area1 = abs(temp.vertexs[*(iter)-1].x*temp.vertexs[*(iter + 3) - 1].y - temp.vertexs[*(iter)-1].y*temp.vertexs[*(iter + 3) - 1].x + temp.vertexs[*(iter + 6) - 1].x*temp.vertexs[*(iter)-1].y - temp.vertexs[*(iter + 6) - 1].y*temp.vertexs[*(iter)-1].x + temp.vertexs[*(iter + 3) - 1].x*temp.vertexs[*(iter + 6) - 1].y - temp.vertexs[*(iter + 6) - 1].x*temp.vertexs[*(iter + 3) - 1].y)*0.5;
+				area2 = abs(temp.vertexs[*(iter)-1].x*temp.vertexs[*(iter + 3) - 1].z - temp.vertexs[*(iter)-1].z*temp.vertexs[*(iter + 3) - 1].x + temp.vertexs[*(iter + 6) - 1].x*temp.vertexs[*(iter)-1].z - temp.vertexs[*(iter + 6) - 1].z*temp.vertexs[*(iter)-1].x + temp.vertexs[*(iter + 3) - 1].x*temp.vertexs[*(iter + 6) - 1].z - temp.vertexs[*(iter + 6) - 1].x*temp.vertexs[*(iter + 3) - 1].z)*0.5;
+				area3 = abs(temp.vertexs[*(iter)-1].y*temp.vertexs[*(iter + 3) - 1].z - temp.vertexs[*(iter)-1].z*temp.vertexs[*(iter + 3) - 1].y + temp.vertexs[*(iter + 6) - 1].y*temp.vertexs[*(iter)-1].z - temp.vertexs[*(iter + 6) - 1].z*temp.vertexs[*(iter)-1].y + temp.vertexs[*(iter + 3) - 1].y*temp.vertexs[*(iter + 6) - 1].z - temp.vertexs[*(iter + 6) - 1].y*temp.vertexs[*(iter + 3) - 1].z)*0.5;
+				if ((area3 >= area2) && (area3 >= area1))
+				{
+					if (temp.normals[*(iter + 2) - 1].x + temp.normals[*(iter + 5) - 1].x + temp.normals[*(iter + 8) - 1].x > 0)
+						facenum = 5;
+					else
+						facenum = 6;
+					sss1 += 1;
+				}
+				if ((area1 >= area2) && (area1 >= area3))
+				{
+					if (temp.normals[*(iter + 2) - 1].z + temp.normals[*(iter + 5) - 1].z + temp.normals[*(iter + 8) - 1].z > 0)
+						facenum = 4;
+					else
+						facenum = 1;
+					sss2 += 1;
+				}
+				if ((area2 >= area1) && (area2 >= area3))
+				{
+					if (temp.normals[*(iter + 2) - 1].y + temp.normals[*(iter + 5) - 1].y + temp.normals[*(iter + 8) - 1].y > 0)
+						facenum = 3;
+					else
+						facenum = 2;
+					sss3 += 1;
+				}
+				if (facenum != 3)
+				{
+					iter += 9;
+					continue;
+				}
+				//glTexCoord2f( (temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin),(temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				//glTexCoord2f((temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin), (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				//glTexCoord2f(1-(temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin), (temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin));
+
+				glNormal3f(temp.normals[*(iter + 2) - 1].x, temp.normals[*(iter + 2) - 1].y, temp.normals[*(iter + 2) - 1].z);
+				if ((facenum == 1))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				if ((facenum == 4))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), 1 - (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				if ((facenum == 2))
+					glTexCoord2f((temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 3))
+					glTexCoord2f(1 - (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 6))
+					glTexCoord2f(1 - (temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 5))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				glVertex3f(temp.vertexs[*iter - 1].x, temp.vertexs[*iter - 1].y, temp.vertexs[*iter - 1].z);
+				iter += 3;
+
+				glNormal3f(temp.normals[*(iter + 2) - 1].x, temp.normals[*(iter + 2) - 1].y, temp.normals[*(iter + 2) - 1].z);
+				if ((facenum == 1))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				if ((facenum == 4))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), 1 - (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				if ((facenum == 2))
+					glTexCoord2f((temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 3))
+					glTexCoord2f(1 - (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 6))
+					glTexCoord2f(1 - (temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 5))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				glVertex3f(temp.vertexs[*iter - 1].x, temp.vertexs[*iter - 1].y, temp.vertexs[*iter - 1].z);
+				iter += 3;
+
+				glNormal3f(temp.normals[*(iter + 2) - 1].x, temp.normals[*(iter + 2) - 1].y, temp.normals[*(iter + 2) - 1].z);
+				if ((facenum == 1))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				if ((facenum == 4))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), 1 - (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				if ((facenum == 2))
+					glTexCoord2f((temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 3))
+					glTexCoord2f(1 - (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 6))
+					glTexCoord2f(1 - (temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 5))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				glVertex3f(temp.vertexs[*iter - 1].x, temp.vertexs[*iter - 1].y, temp.vertexs[*iter - 1].z);
+				iter += 3;
+			}
+			glBindTexture(GL_TEXTURE_2D, 0);
+			glEnd();
+
+			glBindTexture(GL_TEXTURE_2D, 4);
+			glBegin(GL_TRIANGLES);
+			iter = temp.faces.begin();
+			while (iter != temp.faces.end())
+			{
+				//temp.vertexs[*(iter)-1].x temp.vertexs[*(iter)-1].y temp.vertexs[*(iter)-1].z
+				//temp.vertexs[*(iter+3)-1].x temp.vertexs[*(iter+3)-1].y temp.vertexs[*(iter+3)-1].z
+				//temp.vertexs[*(iter+6)-1].x temp.vertexs[*(iter+6)-1].y temp.vertexs[*(iter+6)-1].z
+				area1 = abs(temp.vertexs[*(iter)-1].x*temp.vertexs[*(iter + 3) - 1].y - temp.vertexs[*(iter)-1].y*temp.vertexs[*(iter + 3) - 1].x + temp.vertexs[*(iter + 6) - 1].x*temp.vertexs[*(iter)-1].y - temp.vertexs[*(iter + 6) - 1].y*temp.vertexs[*(iter)-1].x + temp.vertexs[*(iter + 3) - 1].x*temp.vertexs[*(iter + 6) - 1].y - temp.vertexs[*(iter + 6) - 1].x*temp.vertexs[*(iter + 3) - 1].y)*0.5;
+				area2 = abs(temp.vertexs[*(iter)-1].x*temp.vertexs[*(iter + 3) - 1].z - temp.vertexs[*(iter)-1].z*temp.vertexs[*(iter + 3) - 1].x + temp.vertexs[*(iter + 6) - 1].x*temp.vertexs[*(iter)-1].z - temp.vertexs[*(iter + 6) - 1].z*temp.vertexs[*(iter)-1].x + temp.vertexs[*(iter + 3) - 1].x*temp.vertexs[*(iter + 6) - 1].z - temp.vertexs[*(iter + 6) - 1].x*temp.vertexs[*(iter + 3) - 1].z)*0.5;
+				area3 = abs(temp.vertexs[*(iter)-1].y*temp.vertexs[*(iter + 3) - 1].z - temp.vertexs[*(iter)-1].z*temp.vertexs[*(iter + 3) - 1].y + temp.vertexs[*(iter + 6) - 1].y*temp.vertexs[*(iter)-1].z - temp.vertexs[*(iter + 6) - 1].z*temp.vertexs[*(iter)-1].y + temp.vertexs[*(iter + 3) - 1].y*temp.vertexs[*(iter + 6) - 1].z - temp.vertexs[*(iter + 6) - 1].y*temp.vertexs[*(iter + 3) - 1].z)*0.5;
+				if ((area3 >= area2) && (area3 >= area1))
+				{
+					if (temp.normals[*(iter + 2) - 1].x + temp.normals[*(iter + 5) - 1].x + temp.normals[*(iter + 8) - 1].x > 0)
+						facenum = 5;
+					else
+						facenum = 6;
+					sss1 += 1;
+				}
+				if ((area1 >= area2) && (area1 >= area3))
+				{
+					if (temp.normals[*(iter + 2) - 1].z + temp.normals[*(iter + 5) - 1].z + temp.normals[*(iter + 8) - 1].z > 0)
+						facenum = 4;
+					else
+						facenum = 1;
+					sss2 += 1;
+				}
+				if ((area2 >= area1) && (area2 >= area3))
+				{
+					if (temp.normals[*(iter + 2) - 1].y + temp.normals[*(iter + 5) - 1].y + temp.normals[*(iter + 8) - 1].y > 0)
+						facenum = 3;
+					else
+						facenum = 2;
+					sss3 += 1;
+				}
+				if (facenum != 4)
+				{
+					iter += 9;
+					continue;
+				}
+				//glTexCoord2f( (temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin),(temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				//glTexCoord2f((temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin), (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				//glTexCoord2f(1-(temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin), (temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin));
+
+				glNormal3f(temp.normals[*(iter + 2) - 1].x, temp.normals[*(iter + 2) - 1].y, temp.normals[*(iter + 2) - 1].z);
+				if ((facenum == 1))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				if ((facenum == 4))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), 1-(temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				if ((facenum == 2))
+					glTexCoord2f((temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 3))
+					glTexCoord2f(1 - (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 6))
+					glTexCoord2f(1 - (temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 5))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				glVertex3f(temp.vertexs[*iter - 1].x, temp.vertexs[*iter - 1].y, temp.vertexs[*iter - 1].z);
+				iter += 3;
+
+				glNormal3f(temp.normals[*(iter + 2) - 1].x, temp.normals[*(iter + 2) - 1].y, temp.normals[*(iter + 2) - 1].z);
+				if ((facenum == 1))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				if ((facenum == 4))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), 1 - (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				if ((facenum == 2))
+					glTexCoord2f((temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 3))
+					glTexCoord2f(1 - (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 6))
+					glTexCoord2f(1 - (temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 5))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				glVertex3f(temp.vertexs[*iter - 1].x, temp.vertexs[*iter - 1].y, temp.vertexs[*iter - 1].z);
+				iter += 3;
+
+				glNormal3f(temp.normals[*(iter + 2) - 1].x, temp.normals[*(iter + 2) - 1].y, temp.normals[*(iter + 2) - 1].z);
+				if ((facenum == 1))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				if ((facenum == 4))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), 1 - (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				if ((facenum == 2))
+					glTexCoord2f((temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 3))
+					glTexCoord2f(1 - (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 6))
+					glTexCoord2f(1 - (temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 5))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				glVertex3f(temp.vertexs[*iter - 1].x, temp.vertexs[*iter - 1].y, temp.vertexs[*iter - 1].z);
+				iter += 3;
+			}
+			glBindTexture(GL_TEXTURE_2D, 0);
+			glEnd();
+
+
+			glBindTexture(GL_TEXTURE_2D, 5);
+			glBegin(GL_TRIANGLES);
+			iter = temp.faces.begin();
+			while (iter != temp.faces.end())
+			{
+				//temp.vertexs[*(iter)-1].x temp.vertexs[*(iter)-1].y temp.vertexs[*(iter)-1].z
+				//temp.vertexs[*(iter+3)-1].x temp.vertexs[*(iter+3)-1].y temp.vertexs[*(iter+3)-1].z
+				//temp.vertexs[*(iter+6)-1].x temp.vertexs[*(iter+6)-1].y temp.vertexs[*(iter+6)-1].z
+				area1 = abs(temp.vertexs[*(iter)-1].x*temp.vertexs[*(iter + 3) - 1].y - temp.vertexs[*(iter)-1].y*temp.vertexs[*(iter + 3) - 1].x + temp.vertexs[*(iter + 6) - 1].x*temp.vertexs[*(iter)-1].y - temp.vertexs[*(iter + 6) - 1].y*temp.vertexs[*(iter)-1].x + temp.vertexs[*(iter + 3) - 1].x*temp.vertexs[*(iter + 6) - 1].y - temp.vertexs[*(iter + 6) - 1].x*temp.vertexs[*(iter + 3) - 1].y)*0.5;
+				area2 = abs(temp.vertexs[*(iter)-1].x*temp.vertexs[*(iter + 3) - 1].z - temp.vertexs[*(iter)-1].z*temp.vertexs[*(iter + 3) - 1].x + temp.vertexs[*(iter + 6) - 1].x*temp.vertexs[*(iter)-1].z - temp.vertexs[*(iter + 6) - 1].z*temp.vertexs[*(iter)-1].x + temp.vertexs[*(iter + 3) - 1].x*temp.vertexs[*(iter + 6) - 1].z - temp.vertexs[*(iter + 6) - 1].x*temp.vertexs[*(iter + 3) - 1].z)*0.5;
+				area3 = abs(temp.vertexs[*(iter)-1].y*temp.vertexs[*(iter + 3) - 1].z - temp.vertexs[*(iter)-1].z*temp.vertexs[*(iter + 3) - 1].y + temp.vertexs[*(iter + 6) - 1].y*temp.vertexs[*(iter)-1].z - temp.vertexs[*(iter + 6) - 1].z*temp.vertexs[*(iter)-1].y + temp.vertexs[*(iter + 3) - 1].y*temp.vertexs[*(iter + 6) - 1].z - temp.vertexs[*(iter + 6) - 1].y*temp.vertexs[*(iter + 3) - 1].z)*0.5;
+				if ((area3 >= area2) && (area3 >= area1))
+				{
+					if (temp.normals[*(iter + 2) - 1].x + temp.normals[*(iter + 5) - 1].x + temp.normals[*(iter + 8) - 1].x > 0)
+						facenum = 5;
+					else
+						facenum = 6;
+					sss1 += 1;
+				}
+				if ((area1 >= area2) && (area1 >= area3))
+				{
+					if (temp.normals[*(iter + 2) - 1].z + temp.normals[*(iter + 5) - 1].z + temp.normals[*(iter + 8) - 1].z > 0)
+						facenum = 4;
+					else
+						facenum = 1;
+					sss2 += 1;
+				}
+				if ((area2 >= area1) && (area2 >= area3))
+				{
+					if (temp.normals[*(iter + 2) - 1].y + temp.normals[*(iter + 5) - 1].y + temp.normals[*(iter + 8) - 1].y > 0)
+						facenum = 3;
+					else
+						facenum = 2;
+					sss3 += 1;
+				}
+				if (facenum != 5)
+				{
+					iter += 9;
+					continue;
+				}
+				//glTexCoord2f( (temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin),(temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				//glTexCoord2f((temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin), (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				//glTexCoord2f(1-(temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin), (temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin));
+
+				glNormal3f(temp.normals[*(iter + 2) - 1].x, temp.normals[*(iter + 2) - 1].y, temp.normals[*(iter + 2) - 1].z);
+				if ((facenum == 1))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				if ((facenum == 4))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), 1 - (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				if ((facenum == 2))
+					glTexCoord2f((temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 3))
+					glTexCoord2f(1 - (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 6))
+					glTexCoord2f(1 - (temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 5))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				glVertex3f(temp.vertexs[*iter - 1].x, temp.vertexs[*iter - 1].y, temp.vertexs[*iter - 1].z);
+				iter += 3;
+
+				glNormal3f(temp.normals[*(iter + 2) - 1].x, temp.normals[*(iter + 2) - 1].y, temp.normals[*(iter + 2) - 1].z);
+				if ((facenum == 1))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				if ((facenum == 4))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), 1 - (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				if ((facenum == 2))
+					glTexCoord2f((temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 3))
+					glTexCoord2f(1 - (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 6))
+					glTexCoord2f(1 - (temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 5))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				glVertex3f(temp.vertexs[*iter - 1].x, temp.vertexs[*iter - 1].y, temp.vertexs[*iter - 1].z);
+				iter += 3;
+
+				glNormal3f(temp.normals[*(iter + 2) - 1].x, temp.normals[*(iter + 2) - 1].y, temp.normals[*(iter + 2) - 1].z);
+				if ((facenum == 1))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				if ((facenum == 4))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), 1 - (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				if ((facenum == 2))
+					glTexCoord2f((temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 3))
+					glTexCoord2f(1 - (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 6))
+					glTexCoord2f(1 - (temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 5))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				glVertex3f(temp.vertexs[*iter - 1].x, temp.vertexs[*iter - 1].y, temp.vertexs[*iter - 1].z);
+				iter += 3;
+			}
+			glBindTexture(GL_TEXTURE_2D, 0);
+			glEnd();
+
+
+			glBindTexture(GL_TEXTURE_2D, 6);
+			glBegin(GL_TRIANGLES);
+			iter = temp.faces.begin();
+			while (iter != temp.faces.end())
+			{
+				//temp.vertexs[*(iter)-1].x temp.vertexs[*(iter)-1].y temp.vertexs[*(iter)-1].z
+				//temp.vertexs[*(iter+3)-1].x temp.vertexs[*(iter+3)-1].y temp.vertexs[*(iter+3)-1].z
+				//temp.vertexs[*(iter+6)-1].x temp.vertexs[*(iter+6)-1].y temp.vertexs[*(iter+6)-1].z
+				area1 = abs(temp.vertexs[*(iter)-1].x*temp.vertexs[*(iter + 3) - 1].y - temp.vertexs[*(iter)-1].y*temp.vertexs[*(iter + 3) - 1].x + temp.vertexs[*(iter + 6) - 1].x*temp.vertexs[*(iter)-1].y - temp.vertexs[*(iter + 6) - 1].y*temp.vertexs[*(iter)-1].x + temp.vertexs[*(iter + 3) - 1].x*temp.vertexs[*(iter + 6) - 1].y - temp.vertexs[*(iter + 6) - 1].x*temp.vertexs[*(iter + 3) - 1].y)*0.5;
+				area2 = abs(temp.vertexs[*(iter)-1].x*temp.vertexs[*(iter + 3) - 1].z - temp.vertexs[*(iter)-1].z*temp.vertexs[*(iter + 3) - 1].x + temp.vertexs[*(iter + 6) - 1].x*temp.vertexs[*(iter)-1].z - temp.vertexs[*(iter + 6) - 1].z*temp.vertexs[*(iter)-1].x + temp.vertexs[*(iter + 3) - 1].x*temp.vertexs[*(iter + 6) - 1].z - temp.vertexs[*(iter + 6) - 1].x*temp.vertexs[*(iter + 3) - 1].z)*0.5;
+				area3 = abs(temp.vertexs[*(iter)-1].y*temp.vertexs[*(iter + 3) - 1].z - temp.vertexs[*(iter)-1].z*temp.vertexs[*(iter + 3) - 1].y + temp.vertexs[*(iter + 6) - 1].y*temp.vertexs[*(iter)-1].z - temp.vertexs[*(iter + 6) - 1].z*temp.vertexs[*(iter)-1].y + temp.vertexs[*(iter + 3) - 1].y*temp.vertexs[*(iter + 6) - 1].z - temp.vertexs[*(iter + 6) - 1].y*temp.vertexs[*(iter + 3) - 1].z)*0.5;
+				if ((area3 >= area2) && (area3 >= area1))
+				{
+					if (temp.normals[*(iter + 2) - 1].x + temp.normals[*(iter + 5) - 1].x + temp.normals[*(iter + 8) - 1].x > 0)
+						facenum = 5;
+					else
+						facenum = 6;
+					sss1 += 1;
+				}
+				if ((area1 >= area2) && (area1 >= area3))
+				{
+					if (temp.normals[*(iter + 2) - 1].z + temp.normals[*(iter + 5) - 1].z + temp.normals[*(iter + 8) - 1].z > 0)
+						facenum = 4;
+					else
+						facenum = 1;
+					sss2 += 1;
+				}
+				if ((area2 >= area1) && (area2 >= area3))
+				{
+					if (temp.normals[*(iter + 2) - 1].y + temp.normals[*(iter + 5) - 1].y + temp.normals[*(iter + 8) - 1].y > 0)
+						facenum = 3;
+					else
+						facenum = 2;
+					sss3 += 1;
+				}
+				if (facenum != 6)
+				{
+					iter += 9;
+					continue;
+				}
+				//glTexCoord2f( (temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin),(temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				//glTexCoord2f((temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin), (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				//glTexCoord2f(1-(temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin), (temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin));
+
+				glNormal3f(temp.normals[*(iter + 2) - 1].x, temp.normals[*(iter + 2) - 1].y, temp.normals[*(iter + 2) - 1].z);
+				if ((facenum == 1))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				if ((facenum == 4))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), 1 - (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				if ((facenum == 2))
+					glTexCoord2f((temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 3))
+					glTexCoord2f(1 - (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 6))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 5))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				glVertex3f(temp.vertexs[*iter - 1].x, temp.vertexs[*iter - 1].y, temp.vertexs[*iter - 1].z);
+				iter += 3;
+
+				glNormal3f(temp.normals[*(iter + 2) - 1].x, temp.normals[*(iter + 2) - 1].y, temp.normals[*(iter + 2) - 1].z);
+				if ((facenum == 1))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				if ((facenum == 4))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), 1 - (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				if ((facenum == 2))
+					glTexCoord2f((temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 3))
+					glTexCoord2f(1 - (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 6))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 5))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				glVertex3f(temp.vertexs[*iter - 1].x, temp.vertexs[*iter - 1].y, temp.vertexs[*iter - 1].z);
+				iter += 3;
+
+				glNormal3f(temp.normals[*(iter + 2) - 1].x, temp.normals[*(iter + 2) - 1].y, temp.normals[*(iter + 2) - 1].z);
+				if ((facenum == 1))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				if ((facenum == 4))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), 1 - (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin));
+				if ((facenum == 2))
+					glTexCoord2f((temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 3))
+					glTexCoord2f(1 - (temp.vertexs[*iter - 1].x - tempxmin) / (tempxmax - tempxmin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 6))
+					glTexCoord2f( (temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				if ((facenum == 5))
+					glTexCoord2f((temp.vertexs[*iter - 1].y - tempymin) / (tempymax - tempymin), (temp.vertexs[*iter - 1].z - tempzmin) / (tempzmax - tempzmin));
+				glVertex3f(temp.vertexs[*iter - 1].x, temp.vertexs[*iter - 1].y, temp.vertexs[*iter - 1].z);
+				iter += 3;
+			}
+			glBindTexture(GL_TEXTURE_2D, 0);
+			glEnd();
 		}
 		else
 		{
@@ -227,8 +764,7 @@ void myDisplay()
 				iter+=3;
 			}
 		}
-		glBindTexture(GL_TEXTURE_2D,0);
-		glEnd();
+		
 	}
 	glPopMatrix();
 	glutSwapBuffers();
@@ -236,7 +772,7 @@ void myDisplay()
 
 void init()
 {
-	ReadObj(cd,".\\tank\\tryit.obj",objmap,objname,matname);
+	ReadObj(cd,".\\tank\\new.obj",objmap,objname,matname);
 	//glutFullScreen();
 	glClearColor(0.93,0.94,0.98,1.0);
 	glShadeModel(GL_SMOOTH);

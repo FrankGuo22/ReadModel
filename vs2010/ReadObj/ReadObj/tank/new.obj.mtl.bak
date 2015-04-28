@@ -1,0 +1,18 @@
+#
+# Wavefront material file
+# Converted by Meshlab Group
+#
+
+newmtl material_0
+Ka 0.200000 0.200000 0.200000
+Kd 1.000000 1.000000 1.000000
+Ks 1.000000 1.000000 1.000000
+Tr 1.000000
+illum 2
+Ns 0.000000
+map_Ka front.bmp 
+map_Ka 2.bmp
+map_Ka 3.bmp
+map_Ka front.bmp 
+map_Ka 5.bmp
+map_Ka 6.bmp
