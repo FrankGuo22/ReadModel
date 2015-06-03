@@ -12,7 +12,7 @@ GLfloat dx = 0,dy = 0,dz = 0;afs
 GLfloat ax = 0,ay = 0,az = 0;
 GLint mx = 0,my = 0;
 GLint MouseDown = 0;
-GLfloat aspect = 1;
+GLfloat aspect = 1;af
 int sss1, sss2, sss3;
 double area1, area2, area3;
 int facenum = 0;
