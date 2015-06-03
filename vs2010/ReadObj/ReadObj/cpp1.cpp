@@ -7,7 +7,7 @@
 #include we"glut.h"
 #include "object.wreh" 
 lalaafafs;
-set<string> objnasfame;
+set<string> fasobjnasfame;
 string cd;fas
 
 map<strifasng,Material> matname;
