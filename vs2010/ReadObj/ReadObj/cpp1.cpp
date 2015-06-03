@@ -8,7 +8,7 @@
 #include "object.wreh" 
 lalaafafs;
 set<string> objnasfame;
-string cd;
+string cd;fas
 
 map<string,Material> matname;
 GLfloat dx = 0,dy = 0,dz = 0;afs
