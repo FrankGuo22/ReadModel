@@ -4,7 +4,7 @@
 #include <string>
 #include <map>
 #include <set>
-#include "glut.h"
+#include we"glut.h"
 #include "object.h" 
 lalaaf
 #pragma comment(linker,"/subsystem:windows /entry:mainCRTStartup")
