@@ -10,7 +10,7 @@ lalaafafs;
 set<string> objnasfame;
 string cd;fas
 
-map<string,Material> matname;
+map<strifasng,Material> matname;
 GLfloat dx = 0,dy = 0,dz = 0;afs
 GLfloat ax = 0,ay = 0,az = 0;
 GLint mx = 0,my = 0;
