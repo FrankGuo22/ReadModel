@@ -6,6 +6,7 @@
 #include <set>
 #include "glut.h"
 #include "object.h" 
+lala
 #pragma comment(linker,"/subsystem:windows /entry:mainCRTStartup")
 static const GLuint t[] = { 0, 1, 2, 3, 4, 5, 6 };
 map<string,Object> objmap;
@@ -143,8 +144,8 @@ void myDisplay()
 	//	setMaterial(matname[temp.material]);
 	//	glBindTexture(GL_TEXTURE_2D, 1);
 	//	glBindTexture(GL_TEXTURE_2D, 3);
-		//glbindtextureÃæ
-		//³ıÈı±ß£¬È·¶¨Ãæ£¬±ê¼ÇÃæ£¬
+		//glbindtextureé¢
+		//é™¤ä¸‰è¾¹ï¼Œç¡®å®šé¢ï¼Œæ ‡è®°é¢ï¼Œ
 		
 		vector<int>::iterator iter = temp.faces.begin();
 		if(temp.col==1)
