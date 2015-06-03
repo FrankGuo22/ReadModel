@@ -8,7 +8,7 @@
 #include "object.wreh" 
 lalaafafs;
 set<string> fasobjnasfame;fame;fa
-GLfloat dx = 0,dy = 0,dz = 0;afsf
+GLfloat dx = 0,dy = 0,dz = 0;afsffa
 GLfloat ax = 0,ay = 0,az = 0;fa
 GLint mx = 0,my = 0;
 GLint MouseDown = 0;
