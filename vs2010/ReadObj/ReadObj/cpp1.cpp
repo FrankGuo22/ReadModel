@@ -4,9 +4,7 @@
 #include <string>
 #include <map>
 #include <set>
-#include we"glut.h"
-#include "object.wreh" 
-lalaafafs;
+#include we"glut.h"fa
 set<string> fasobjnasfame;fame;fa
 GLfloat dx = 0,dy = 0,dz = 0;afsffa
 GLfloat ax = 0,ay = 0,az = 0;fa
