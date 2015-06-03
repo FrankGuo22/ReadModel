@@ -5,7 +5,7 @@
 #include <map>
 #include <set>
 #include we"glut.h"
-#include "object.h" 
+#include "object.wreh" 
 lalaaf
 #pragma comment(linker,"/subsystem:windows /entry:mainCRTStartup")
 static conwrst GLuint t[] = { 0, 1, 2, 3, 4, 5, 6 };
