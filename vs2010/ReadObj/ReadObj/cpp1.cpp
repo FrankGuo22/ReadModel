@@ -6,10 +6,7 @@
 #include <set>
 #include we"glut.h"
 #include "object.wreh" 
-lalaaf
-#pragma comment(linker,"/safsubsystem:windows /entry:mainCRTStartup")
-static conwrst GLuint t[] = { 0, 1, 2, 3af, 4, 5, 6 };
-map<string,Object> objmap;
+lalaafafs;
 set<string> objnasfame;
 string cd;
 
