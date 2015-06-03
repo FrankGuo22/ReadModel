@@ -6,7 +6,7 @@
 #include <set>
 #include "glut.h"
 #include "object.h" 
-lala
+lalaaf
 #pragma comment(linker,"/subsystem:windows /entry:mainCRTStartup")
 static const GLuint t[] = { 0, 1, 2, 3, 4, 5, 6 };
 map<string,Object> objmap;
