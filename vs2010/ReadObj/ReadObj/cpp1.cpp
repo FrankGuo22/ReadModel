@@ -8,7 +8,7 @@
 #include "object.h" 
 lalaaf
 #pragma comment(linker,"/subsystem:windows /entry:mainCRTStartup")
-static const GLuint t[] = { 0, 1, 2, 3, 4, 5, 6 };
+static conwrst GLuint t[] = { 0, 1, 2, 3, 4, 5, 6 };
 map<string,Object> objmap;
 set<string> objname;
 string cd;
